@@ -1,0 +1,85 @@
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+spec:
+  type: NodePort
+  selector:
+    app: user
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9092
+      #   nodePort: 30130
+      nodePort: null
+      targetPort: 9092
+---
+
+# DEPOLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+spec:
+  replicas: 1
+  #  minReadySeconds: 20
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: heavyflood/user:release
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 9092
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "cd /"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          #          timeoutSeconds: 1
+          #          successThreshold: 1
+          #          failureThreshold: 3
+          #          httpGet:
+          #            path: /
+          #            port: 8080
+          #          tcpSocket:
+          #            port: 8080
+          #          initialDelaySeconds: 5
+          #          periodSeconds: 5
+          #          successThreshold: 1
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "cd /"]
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          #          timeoutSeconds: 1
+          #          successThreshold: 1
+          #          failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 20"]
+      imagePullSecrets:
+        - name: regcred
+
