@@ -25,4 +25,16 @@ public class UserController {
 
         return Mono.just("This is User MicroService!!!!!");
     }
+    
+    @GetMapping("/user/info")
+    public Mono<String> getUserInfo(ServerHttpRequest request, ServerHttpResponse response) {
+        logger.info("User MicroService Start>>>>>>>>");
+        HttpHeaders headers = request.getHeaders();
+        headers.forEach((k, v) -> {
+            logger.info(k + " : " + v);
+        });
+        logger.info("User MicroService End>>>>>>>>");
+
+        return Mono.just("This is User MicroService- getUserInfo");
+    }
 }
